@@ -1,0 +1,47 @@
+dist: trusty
+sudo: required
+language: node_js
+node_js:
+  - node
+branches:
+  except:
+  - gh-pages
+notifications:
+  email: false
+services:
+  - docker
+
+jobs:
+  include:
+    - stage: Build
+      name: "Buid Docker image"
+      install: cd scripts && npm ci && cd ..
+      script: node scripts/build
+      env:
+        # DEPLOY_SETTINGS_JSON='{"CI":[{"type":"docker","options":{"user":"","pass":""}}]}'
+        - secure: k0PMGpkgDwzCVH4pryUTwjEdgQ5WRfi+HaWmK0+7MjNSgM+Jm+LFTNz5J30/FKfVG9XNMj+NUg4pM1w7CAYaAKr+LE6g6PbVFZzvbNalfWFKUFzGV3dBfkb998g4n3TVf3HvNS/PeOqF/sXVYRY8AF1TzdMokR5ivwjPE9Zq9Fuwd6JlsXuc4uQ0+uXezZnYeFaWtvYlhUUlmIFjNHDbif+OjK2f5ReyVu6zwVnfdX8VN6iDpEZtpRDjGDniEunmYryWHrTw7Ikw9Ad4ZsvTySPbV7oNxOXDAaJLNDNAC+br4n/Mfl/KN+n43HCjHjRX/IrhMBTYGkXggiDhMK6p/lXWYDGLr/VS6W7eBMXmTYcB+O/k327EzZKGedkKkJRi7eM+1NP87VM0g+tMLnH8LYTySBDr5/6tOFifH2UzMFiaqfnBzHAroaAt1CtFwjW1JlS5Gj6OQhOlK70bIK7PQEyDBFw316SDbQp8CZTa7NvUvNNohqJ1ero/CchWT1pxM8JgQhKnylzlJltp8HIArPQ7sBhFLmJzJz/r5u0VfdeprEJQ4RfNbX3Ir9hlETTSaJ9SYoAiAxqBOQTxqEZZK9xUDGbIaY2xWxkvdmFuJpAgU19++CGw3TtZkf0NZ87y7BMACMaJu43hQxu81eTlSXxDqGfokGz3XztEVnk5eO8=
+    - stage: Test
+      name: Unit Tests
+      install: cd scripts && npm ci && cd ..
+      script: echo ToDo
+    - stage: Deploy
+      name: "Deploy"
+      script: skip
+      install:
+        - cd scripts && npm ci && cd ..
+        - docker pull nlpcmd/nlp-python:unstable
+      env:
+        # DEPLOY_SETTINGS_JSON='{"Staging":[
+        #   {"type":"docker","options":{"source":"nlpcmd/nlp-python:unstable","target":"nlpcmd/nlp-python:edge","user":"","pass":""}},
+        #   {"type":"heroku","options":{"app":"zv-s-nlp-python","source":"nlpcmd/nlp-python:edge","dyno":"web","user":"","token":""}}
+        # ]}'
+        - secure: PR9fLKRGaNhh+fyAo8u2KehUJk9qUP1oXAxxmexjSJXYNQLURoFF2JSqN4ZgkQ1QVtcSsy4G1jMy+cugqv6E8nyQZiecQOHTL6eQdijnVqb9pDWb0c+ofNtsBHNY/a4PQoFkHJv0s3+P1rdbYXIMv3hMZDciCjfBQS3pZhNnQAzQv+8kzf9wlxYGx4Q4B9en5aDWTUPm1bzz4w5LhnUEXvQjUGdOwJ42bIjY8Rr3lNXzRHegMhXbHwBonFMT3m3tVLPuOKQeAtTE7r7wihZqDAGUiXBm7grID8mYcQDCguecYwQ+U4qmdOpsqAJZcgQzz4lY/YPUbzpET5g7LRYgYvg391aF0r2YsxvhoKcpLwOhqFyN27rd5AKGa/QSpsKdTAjIwzymffpoBHWjSv3VykTklhSmHslTE7WZXHLIEB+ypkEzOXDgOX7jSjUoWsnGJHR7FJfuYSkv+JyGtdnF/ncPjNgE/mMCedfw/T5EQh95GjhKyce4GGRbL9tH9Rf23bSpylYKxxYnbS5PL++8k/RNmt0vPmTAjcrkH2Ckq8253gRt12HF3kVepkIr4ZRrU4TZEmfgvAZnXcUp5uj7st0leHHc/N9CQktIsC7fajfdfmaRKBAAvu3ou8hknHKggA6LGfd98s7s+XyqZgF/9tnAVjpHdGTrVSxnBmB5J9Y=
+      deploy:
+        - provider: script
+          skip_cleanup: true
+          script: node scripts/deploy Staging
+          on:
+            branch: develop
+
+
+# Disable "Build pushed pull requests"

@@ -1,0 +1,9 @@
+sklearn
+pandas
+pandas-datareader
+matplotlib
+pillow
+requests
+h5py
+keras==2.0.6
+flask
